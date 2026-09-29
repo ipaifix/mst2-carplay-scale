@@ -9,7 +9,7 @@ CPS_RUN_HMI="$CPS_TSD/hmi/runHMI.sh"
 CPS_BACKUP="$CPS_TSD/hmi/runHMI.sh.carplayscale.bak"
 CPS_JAR_DEST="$CPS_TSD/hmi/HMI/jar/mst2-carplay-scale.jar"
 CPS_STATE="$CPS_TSD/var/carplayscale"
-CPS_SD_BACKUP="$CPS_SOURCE_DIR/backup/carplayscale"
+: "${CPS_SD_BACKUP:=$CPS_SOURCE_DIR/backup/carplayscale}"
 CPS_BEGIN='# mst2-carplay-scale: begin'
 CPS_END='# mst2-carplay-scale: end'
 

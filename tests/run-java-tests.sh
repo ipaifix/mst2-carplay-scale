@@ -8,7 +8,7 @@ PROJECT_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 
 "$PROJECT_ROOT/scripts/build-neutral-jar.sh"
 
-PATCH_JAR="$PROJECT_ROOT/build/mst2-carplay-scale-neutral-p0468.jar"
+PATCH_JAR="$PROJECT_ROOT/build/mst2-carplay-scale-p0468.jar"
 TEST_CLASSES="$PROJECT_ROOT/build/test-classes"
 STOCK_API="$PROJECT_ROOT/build/stock-serviceconfiguration.api"
 PATCH_API="$PROJECT_ROOT/build/patch-serviceconfiguration.api"
@@ -30,6 +30,7 @@ cmp "$STOCK_API" "$PATCH_API"
     "$PROJECT_ROOT/tests/java/ServiceConfigurationNeutralTest.java"
 
 "$JAVA_HOME/bin/java" \
+    -Dtest.state.dir="$PROJECT_ROOT/build/test-state" \
     -classpath "$TEST_CLASSES:$PATCH_JAR:$MIBHMI_JAR" \
     ServiceConfigurationNeutralTest
 
@@ -38,7 +39,7 @@ MAJOR=$("$JAVA_HOME/bin/javap" -classpath "$PATCH_JAR" -verbose \
 [ "$MAJOR" = 48 ]
 
 CONTENTS=$("$JAVA_HOME/bin/jar" tf "$PATCH_JAR" | grep '\.class$' | sort)
-EXPECTED='com/mst2/carplayscale/NeutralProbe.class
+EXPECTED='com/mst2/carplayscale/CarPlayScale.class
 org/dsi/ifc/carplay/ServiceConfiguration.class'
 [ "$CONTENTS" = "$EXPECTED" ]
 

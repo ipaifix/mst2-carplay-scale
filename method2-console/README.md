@@ -1,4 +1,4 @@
-# Méthode console — premier essai neutre
+# Méthode console — installation avancée
 
 Après exécution de `scripts/build-neutral-jar.sh`, le paquet local contient :
 
@@ -11,11 +11,12 @@ mst2-carplay-scale-patch/
 ├── trial.sh
 ├── enable.sh
 ├── disable.sh
+├── set-scale.sh
 ├── status.sh
 └── uninstall.sh
 ```
 
-La build actuelle est la phase C neutre P0468T : elle ne modifie aucune dimension. `install.sh` installe le mécanisme et arme uniquement le prochain démarrage en Trial Boot. Il ne crée jamais le marqueur permanent.
+`install.sh` force l'échelle stock 100 %, installe le mécanisme et arme uniquement le prochain démarrage en Trial Boot. Il ne crée jamais le marqueur permanent. Les échelles supérieures et `enable.sh` restent des actions séparées.
 
 ## Premier essai véhicule
 
@@ -30,7 +31,7 @@ La build actuelle est la phase C neutre P0468T : elle ne modifie aucune dimensio
 Le marqueur de réussite attendu après une connexion CarPlay contient :
 
 ```text
-phase=C neutral ServiceConfiguration shadow loaded
+phase=D/E scale=100
 ```
 
 Au redémarrage suivant, le JAR ne sera plus chargé tant qu'un nouveau `trial.sh` ou un `enable.sh` explicite n'est pas lancé.

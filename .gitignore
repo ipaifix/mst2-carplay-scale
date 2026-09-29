@@ -8,3 +8,7 @@ build/*
 dump/
 IMG_*.jpeg
 Log-*.txt
+
+# Generated Toolbox payload (rebuilt by scripts/prepare-toolbox-package.sh).
+method1-GEM/custom/carplayscale/
+method1-GEM/custom/java/

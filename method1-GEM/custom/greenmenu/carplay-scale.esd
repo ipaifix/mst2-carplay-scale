@@ -1,0 +1,59 @@
+###########################################################################################
+# Main -> MIB STD2 Toolbox -> Customization -> CarPlay Display Scale
+###########################################################################################
+screen carplay-scale Customization
+
+keyValue
+    value   String sys 0x00000000 0
+    label   "MST2 CarPlay Display Scale - P0468"
+    poll    0
+keyValue
+    value   String sys 0x00000000 0
+    label   "Safe default: 100 percent keeps stock physical dimensions"
+    poll    0
+keyValue
+    value   String sys 0x00000000 0
+    label   "Install arms ONE trial boot only; permanent mode is a separate action"
+    poll    0
+
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_install.sh"
+    label   "Install neutral patch + arm one trial boot"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_status.sh"
+    label   "Show status"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_trial.sh"
+    label   "Arm another one-shot trial"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_enable.sh"
+    label   "Enable permanently (use only after a successful trial)"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_disable.sh"
+    label   "Disable all trial/permanent markers"
+
+keyValue
+    value   String sys 0x00000000 0
+    label   "Physical display scale (logical resolution remains stock 800x480)"
+    poll    0
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_scale_100.sh"
+    label   "Set scale: Stock / 100 percent"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_scale_110.sh"
+    label   "Set scale: 110 percent"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_scale_115.sh"
+    label   "Set scale: 115 percent"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_scale_120.sh"
+    label   "Set scale: 120 percent"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_scale_125.sh"
+    label   "Set scale: 125 percent"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_copy_logs.sh"
+    label   "Copy CarPlay Scale logs to SD"
+script
+    value   sys 1 0x0100 "/tsd/etc/persistence/esd/scripts/carplayscale_gem_uninstall.sh"
+    label   "Completely remove CarPlay Scale patch"

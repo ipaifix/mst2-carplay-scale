@@ -11,6 +11,7 @@ CPS_STATUS_JAR=no
 CPS_STATUS_TRIAL=no
 CPS_STATUS_ENABLED=no
 CPS_STATUS_EMERGENCY=no
+CPS_STATUS_SCALE=100
 grep -q '^# mst2-carplay-scale: begin$' "$CPS_RUN_HMI" 2>/dev/null && CPS_STATUS_BLOCK=yes
 [ -s "$CPS_JAR_DEST" ] && CPS_STATUS_JAR=yes
 [ -f "$CPS_STATE/trial" ] && CPS_STATUS_TRIAL=yes
@@ -18,8 +19,14 @@ grep -q '^# mst2-carplay-scale: begin$' "$CPS_RUN_HMI" 2>/dev/null && CPS_STATUS
 for CPS_STATUS_MEDIA in "${CPS_ROOT}"/media/mp00*; do
     [ -f "$CPS_STATUS_MEDIA/carplayscale-disable" ] && CPS_STATUS_EMERGENCY=yes
 done
+[ -f "$CPS_STATE/config" ] && CPS_STATUS_SCALE=$(sed -n 's/^scale=//p' "$CPS_STATE/config" 2>/dev/null)
+case "$CPS_STATUS_SCALE" in
+    100|110|115|120|125) ;;
+    *) CPS_STATUS_SCALE=100 ;;
+esac
 echo "runHMI block: $CPS_STATUS_BLOCK"
 echo "JAR installed: $CPS_STATUS_JAR"
 echo "trial armed: $CPS_STATUS_TRIAL"
 echo "permanent enabled: $CPS_STATUS_ENABLED"
 echo "emergency SD disable: $CPS_STATUS_EMERGENCY"
+echo "configured physical scale: $CPS_STATUS_SCALE%"

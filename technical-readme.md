@@ -64,7 +64,7 @@ ASLHandler.sendStartService()
   -> SerializerGen.serialize(config)
 ```
 
-Le sérialiseur P0468 lit directement les 16 champs publics dans leur ordre stock. Le shadow neutre conserve ces champs, les trois constructeurs, les accesseurs et `toString()`. Sa seule différence en phase C est un appel protégé par `catch (Throwable)` qui écrit une fois un marqueur dans `/tsd/var/carplayscale/carplayscale.log`.
+Le sérialiseur P0468 lit directement les 16 champs publics dans leur ordre stock. Le shadow conserve ces champs, les trois constructeurs, les accesseurs et `toString()`. Après les affectations stock, un appel entièrement protégé lit la configuration, journalise les valeurs puis ajuste au besoin uniquement `physicalDisplayHeight` et `physicalDisplayWidth`.
 
 Alternatives écartées :
 
@@ -73,7 +73,9 @@ Alternatives écartées :
 - `SerializerGen` : classe générée massive et critique pour tous les services DSI ;
 - proxy LR généré : nom hashé et classe très large, donc inadapté sans dump exact.
 
-À ce stade, le constructeur reproduit les affectations stock et laisse les dimensions intactes. Les valeurs physiques ne seront ajustées qu'après la phase D de logging réel.
+L'absence de configuration, une valeur invalide ou `scale=100` laisse strictement les dimensions intactes. Seules les valeurs 110/115/120/125 déclenchent un arrondi au millimètre le plus proche. La résolution logique, les offsets, la résolution tactile et les capacités restent inchangés. Le log est limité à 64 Kio avant rotation par écrasement.
+
+L'installateur remet systématiquement la configuration à `scale=100`. Une valeur supérieure et le chargement permanent nécessitent chacun une action distincte dans le menu Toolbox.
 
 ## Données véhicule reçues
 

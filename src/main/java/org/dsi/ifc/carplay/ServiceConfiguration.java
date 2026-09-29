@@ -1,10 +1,10 @@
 package org.dsi.ifc.carplay;
 
-import com.mst2.carplayscale.NeutralProbe;
+import com.mst2.carplayscale.CarPlayScale;
 
 /**
- * ABI-faithful P0468 shadow. Phase C only adds a fail-safe load marker; all
- * fields, constructors, getters and string formatting retain stock behavior.
+ * ABI-faithful P0468 shadow. All fields, constructors, getters and string
+ * formatting retain stock behavior; the fail-safe hook runs last.
  */
 public class ServiceConfiguration {
     public AppStateRequest[] initialAppState;
@@ -41,7 +41,7 @@ public class ServiceConfiguration {
         this.physicalDisplayHeight = 0;
         this.physicalDisplayWidth = 0;
         this.inputFeatures = 0;
-        NeutralProbe.markLoaded();
+        CarPlayScale.apply(this);
     }
 
     public ServiceConfiguration(AppStateRequest[] initialAppState,
@@ -67,7 +67,7 @@ public class ServiceConfiguration {
         this.physicalDisplayHeight = physicalDisplayHeight;
         this.physicalDisplayWidth = physicalDisplayWidth;
         this.inputFeatures = inputFeatures;
-        NeutralProbe.markLoaded();
+        CarPlayScale.apply(this);
     }
 
     public ServiceConfiguration(AppStateRequest[] initialAppState,
@@ -94,7 +94,7 @@ public class ServiceConfiguration {
         this.physicalDisplayHeight = physicalDisplayHeight;
         this.physicalDisplayWidth = physicalDisplayWidth;
         this.inputFeatures = inputFeatures;
-        NeutralProbe.markLoaded();
+        CarPlayScale.apply(this);
     }
 
     public AppStateRequest[] getInitialAppState() {

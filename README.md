@@ -2,7 +2,7 @@
 
 Patch expérimental, indépendant et réversible pour étudier les paramètres d’affichage annoncés par un MIB2 Standard TechniSat/Preh à Apple CarPlay.
 
-> **État actuel : étapes A et B terminées, étape C construite et validée hors véhicule.** Le dump P0468T a permis de confirmer le hook Java exact et de produire un JAR neutre. Il ne modifie encore aucune dimension et n’a pas encore été validé dans la voiture.
+> **État actuel : étapes A à F construites et validées hors véhicule.** Le dump P0468T a permis de confirmer le hook Java exact. L'installation force le mode stock 100 % ; le logging, les échelles supérieures et le mode permanent sont présents mais n'ont pas encore été validés dans la voiture.
 
 ## Principes de sécurité
 
@@ -20,8 +20,8 @@ Patch expérimental, indépendant et réversible pour étudier les paramètres d
 analysis/                    analyse de l’étape A
 method2-console/             infrastructure console de l’étape B
 tests/                       fixtures et tests host-side
-method1-GEM/                 réservé à l’intégration Toolbox (étape F)
-src/                         shadow P0468 neutre et sonde de chargement
+method1-GEM/                 paquet et menu MIB STD2 Toolbox
+src/                         shadow P0468, logging et échelle physique
 scripts/                     construction reproductible du JAR Java
 build/                       sorties de build, non versionnées
 ```
@@ -30,10 +30,10 @@ build/                       sorties de build, non versionnées
 
 - [x] A — analyse des dépôts et inventaire des classes xPaiiN
 - [x] B — scripts Trial/Permanent/Disable/Emergency/Uninstall et tests shell
-- [x] C — JAR neutre P0468T validé hors véhicule, essai voiture restant
-- [ ] D — journalisation de `ServiceConfiguration`
-- [ ] E — échelle physique 100/110/115/120/125 %
-- [ ] F — interface Green Engineering Menu
+- [x] C — comportement neutre à 100 % validé hors véhicule
+- [x] D — journalisation de `ServiceConfiguration` validée hors véhicule
+- [x] E — échelle physique 100/110/115/120/125 % validée hors véhicule
+- [x] F — interface Green Engineering Menu validée hors véhicule
 
 ## Tests locaux
 
@@ -90,4 +90,4 @@ Elle représente le `runHMI.sh` vivant au moment de la première installation et
 
 ## Important
 
-Le JAR actuel est uniquement la phase C neutre. Le premier essai véhicule devra obligatoirement utiliser `install.sh`, qui arme un seul Trial Boot. Ne pas activer le mode permanent avant confirmation du redémarrage HMI, de CarPlay et de la ligne `phase=C neutral` dans le log. Voir [technical-readme.md](technical-readme.md) et [analysis/phase-a.md](analysis/phase-a.md).
+Le premier essai véhicule doit conserver l'échelle 100 % et utiliser uniquement le Trial Boot. Ne pas activer le mode permanent ni une échelle supérieure avant confirmation du redémarrage HMI, de CarPlay et des valeurs stock dans le log. Pour une installation sans console, voir [method1-GEM/README.md](method1-GEM/README.md).

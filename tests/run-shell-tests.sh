@@ -43,8 +43,14 @@ assert_file "$CASE_ROOT/tsd/hmi/runHMI.sh.carplayscale.bak" "backup created"
 cmp "$TMP_BASE/stock-before" "$CASE_ROOT/tsd/hmi/runHMI.sh.carplayscale.bak" >/dev/null && ok "backup is exact live pre-install file" || not_ok "backup is exact live pre-install file"
 assert_file "$CASE_ROOT/tsd/var/carplayscale/trial" "install arms trial"
 assert_no_file "$CASE_ROOT/tsd/var/carplayscale/enabled" "install does not enable permanently"
+assert_contains "$CASE_ROOT/tsd/var/carplayscale/config" '^scale=100$' "install forces safe stock scale"
 assert_count "$CASE_ROOT/tsd/hmi/runHMI.sh" '^# mst2-carplay-scale: begin$' 1 "one managed block inserted"
 assert_count "$CASE_ROOT/tsd/hmi/runHMI.sh" 'BOOTCLASSPATH=.*mst2-carplay-scale\.jar' 1 "one scale bootclasspath line inserted"
+
+CPS_ROOT="$CASE_ROOT" CPS_SOURCE_DIR="$CASE_DIST" sh "$CASE_DIST/set-scale.sh" 120 >/dev/null || not_ok "valid scale selection exits successfully"
+assert_contains "$CASE_ROOT/tsd/var/carplayscale/config" '^scale=120$' "valid scale written atomically"
+if CPS_ROOT="$CASE_ROOT" CPS_SOURCE_DIR="$CASE_DIST" sh "$CASE_DIST/set-scale.sh" 999 >/dev/null 2>&1; then not_ok "invalid scale rejected"; else ok "invalid scale rejected"; fi
+assert_contains "$CASE_ROOT/tsd/var/carplayscale/config" '^scale=120$' "invalid scale preserves previous config"
 
 CPS_ROOT="$CASE_ROOT" sh "$CASE_ROOT/tsd/hmi/runHMI.sh"
 assert_no_file "$CASE_ROOT/tsd/var/carplayscale/trial" "trial consumed before Java"
@@ -93,6 +99,19 @@ assert_contains "$CASE_ROOT/bootclasspath.result" 'mst2-carplay-scale.jar' "real
 run_script uninstall.sh >/dev/null || not_ok "real P0468-shaped uninstall exits successfully"
 assert_count "$CASE_ROOT/tsd/hmi/runHMI.sh" 'NavActiveIgnore\.jar' 2 "uninstall still preserves duplicate NavActiveIgnore lines"
 assert_count "$CASE_ROOT/tsd/hmi/runHMI.sh" 'mst2-carplay-vc\.jar' 1 "uninstall still preserves real xPaiiN line"
+
+new_case gem "$FIXTURES/runHMI-p0468-xpaiin.sh"
+mkdir -p "$CASE_ROOT/media/mp001/custom/carplayscale" "$CASE_ROOT/media/mp001/custom/java"
+cp "$CASE_DIST"/*.sh "$CASE_DIST"/*.shinc "$CASE_ROOT/media/mp001/custom/carplayscale/"
+cp "$CASE_DIST/mst2-carplay-scale.jar" "$CASE_ROOT/media/mp001/custom/java/"
+CPS_ROOT="$CASE_ROOT" sh "$TEST_ROOT_DIR/method1-GEM/custom/greenmenu/scripts/carplayscale_gem_install.sh" >/dev/null || not_ok "Toolbox menu install wrapper exits successfully"
+assert_file "$CASE_ROOT/tsd/var/carplayscale/trial" "Toolbox menu install arms trial"
+CPS_ROOT="$CASE_ROOT" sh "$TEST_ROOT_DIR/method1-GEM/custom/greenmenu/scripts/carplayscale_gem_scale_115.sh" >/dev/null || not_ok "Toolbox menu scale wrapper exits successfully"
+assert_contains "$CASE_ROOT/tsd/var/carplayscale/config" '^scale=115$' "Toolbox menu writes selected scale"
+CPS_ROOT="$CASE_ROOT" sh "$TEST_ROOT_DIR/method1-GEM/custom/greenmenu/scripts/carplayscale_gem_enable.sh" >/dev/null || not_ok "Toolbox menu permanent wrapper exits successfully"
+assert_file "$CASE_ROOT/tsd/var/carplayscale/enabled" "Toolbox permanent action creates enabled marker"
+CPS_ROOT="$CASE_ROOT" sh "$TEST_ROOT_DIR/method1-GEM/custom/greenmenu/scripts/carplayscale_gem_disable.sh" >/dev/null || not_ok "Toolbox menu disable wrapper exits successfully"
+assert_no_file "$CASE_ROOT/tsd/var/carplayscale/enabled" "Toolbox menu disable removes permanent marker"
 
 for invalid in runHMI-empty.sh runHMI-no-bootclasspath.sh runHMI-no-main.sh; do
     new_case "invalid-$invalid" "$FIXTURES/$invalid"

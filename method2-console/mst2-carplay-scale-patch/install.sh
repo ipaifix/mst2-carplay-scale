@@ -6,7 +6,7 @@ CPS_SOURCE_DIR="${CPS_SCRIPT_PATH%/*}"
 export CPS_SOURCE_DIR
 . "$CPS_SOURCE_DIR/carplayscale_common.sh" || exit 1
 
-CPS_JAR_SOURCE="$CPS_SOURCE_DIR/mst2-carplay-scale.jar"
+: "${CPS_JAR_SOURCE:=$CPS_SOURCE_DIR/mst2-carplay-scale.jar}"
 echo "mst2-carplay-scale safe install (trial only)"
 
 cps_remount_rw
@@ -19,6 +19,13 @@ cps_validate_block_file || { echo "FAIL: invalid boot block template"; exit 1; }
 # A fresh install is always trial-only. Clear older activation state before
 # touching the JAR or runHMI; if a later step fails, the patch stays dormant.
 rm -f "$CPS_STATE/enabled" "$CPS_STATE/trial" || { echo "FAIL: cannot clear old activation markers"; exit 1; }
+echo 'scale=100' > "$CPS_STATE/config.new" || { echo "FAIL: cannot create safe stock config"; exit 1; }
+[ "$(grep -c '^scale=100$' "$CPS_STATE/config.new" 2>/dev/null)" = 1 ] || {
+    rm -f "$CPS_STATE/config.new"
+    echo "FAIL: safe stock config validation failed"
+    exit 1
+}
+mv "$CPS_STATE/config.new" "$CPS_STATE/config" || { echo "FAIL: cannot install safe stock config"; exit 1; }
 
 cps_backup_runhmi || { echo "FAIL: runHMI.sh backup failed"; exit 1; }
 cps_stage_jar "$CPS_JAR_SOURCE" || { echo "FAIL: JAR staging failed; runHMI.sh unchanged"; exit 1; }
