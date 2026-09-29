@@ -50,27 +50,36 @@ L’installateur :
 
 La désinstallation répète les validations mais retire uniquement le bloc géré. La sauvegarde n’est pas restaurée automatiquement et reste disponible pour une récupération manuelle.
 
-## Hook Java proposé
+## Hook Java confirmé
 
-Le meilleur candidat actuel est `org.dsi.ifc.carplay.ServiceConfiguration`, plus précisément le constructeur qui reçoit les dimensions logiques et physiques. Il est beaucoup plus petit que `ASLHandler` et se situe avant la sérialisation DSI, quel que soit le proxy réellement utilisé.
+Le hook retenu est `org.dsi.ifc.carplay.ServiceConfiguration`, plus précisément le constructeur complet qui reçoit les dimensions logiques et physiques. La classe exacte provient du `MIBHMI.jxe` P0468 du véhicule. Elle est beaucoup plus petite que `ASLHandler` et se situe immédiatement avant la sérialisation DSI.
 
-Cette décision reste **provisoire** jusqu’à extraction P0468T. Alternatives étudiées :
+La chaîne exacte observée est :
+
+```text
+ASLHandler.sendStartService()
+  -> new ServiceConfiguration(..., x/y, physicalHeight/physicalWidth, ...)
+  -> DSICarplay.startService(config)
+  -> tsd.mibstd2.hmi.dsi.carplay.DSICarplayImpl
+  -> SerializerGen.serialize(config)
+```
+
+Le sérialiseur P0468 lit directement les 16 champs publics dans leur ordre stock. Le shadow neutre conserve ces champs, les trois constructeurs, les accesseurs et `toString()`. Sa seule différence en phase C est un appel protégé par `catch (Throwable)` qui écrit une fois un marqueur dans `/tsd/var/carplayscale/carplayscale.log`.
+
+Alternatives écartées :
 
 - `ASLHandler.sendStartService()` : point fonctionnel évident mais classe volumineuse, fortement couplée et dangereuse à remplacer depuis un autre firmware ;
-- `DSICarplayProxy$1` : surface minuscule dans le dump MIB2 High, mais classe synthétique et backend-spécifique ;
-- `ServiceConfigurationSerializer` : proche du transport, mais critique pour le protocole et non confirmé sur MST2 ;
+- proxy DSI : l'implémentation exacte est générée et beaucoup plus large que le DTO ;
+- `SerializerGen` : classe générée massive et critique pour tous les services DSI ;
 - proxy LR généré : nom hashé et classe très large, donc inadapté sans dump exact.
 
-À `scale=100`, le futur constructeur shadowé devra reproduire bit pour bit les affectations stock. Les valeurs physiques ne seront ajustées qu’après la phase de logging réelle.
+À ce stade, le constructeur reproduit les affectations stock et laisse les dimensions intactes. Les valeurs physiques ne seront ajustées qu'après la phase D de logging réel.
 
-## Données requises avant l’étape C
+## Données véhicule reçues
 
-- le `MIBHMI.jxe` ou un dump de classes du `MST2_EU_VW_ZR_P0468T` réellement installé ;
-- le `runHMI.sh` vivant, après installation de xPaiiN ;
-- le JAR xPaiiN effectivement installé ou au minimum son SHA-256 ;
-- si possible, `info.txt` du skin actif et les valeurs `Layout.Carplay.Canvas_Dimension.*` ;
-- la sortie de version JVM/J9 et les chemins exacts du bootstrap class path ;
-- confirmation des outils shell disponibles (`awk`, `grep`, `sed`, `sh -n`, `mv`, `mount`).
+Le dump a confirmé le `runHMI.sh` vivant, le bootstrap J9, la version HMI `H29.319.29.3`, les classes P0468 exactes et la variante xPaiiN `full`. Le fichier vivant comporte deux lignes identiques pour `NavActiveIgnore.jar`; elles sont préservées sans correction automatique.
+
+Les fichiers bruts (`dump/`, photo et log VCDS) sont exclus de Git, car ils sont volumineux et peuvent contenir des identifiants du véhicule.
 
 ## Références
 

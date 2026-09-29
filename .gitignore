@@ -3,3 +3,8 @@ build/*
 *.jar
 *.class
 .DS_Store
+
+# Vehicle-derived artifacts: private, large and reproducible from the unit.
+dump/
+IMG_*.jpeg
+Log-*.txt

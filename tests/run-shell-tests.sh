@@ -84,6 +84,16 @@ run_script install.sh >/dev/null || not_ok "third-party coexistence install exit
 run_script uninstall.sh >/dev/null || not_ok "third-party coexistence uninstall exits successfully"
 assert_contains "$CASE_ROOT/tsd/hmi/runHMI.sh" 'unknown-patch.jar' "unknown third-party patch preserved"
 
+new_case p0468 "$FIXTURES/runHMI-p0468-xpaiin.sh"
+run_script install.sh >/dev/null || not_ok "real P0468-shaped install exits successfully"
+assert_count "$CASE_ROOT/tsd/hmi/runHMI.sh" 'NavActiveIgnore\.jar' 2 "pre-existing duplicate NavActiveIgnore lines preserved"
+assert_count "$CASE_ROOT/tsd/hmi/runHMI.sh" 'mst2-carplay-vc\.jar' 1 "real P0468-shaped xPaiiN line preserved"
+CPS_ROOT="$CASE_ROOT" sh "$CASE_ROOT/tsd/hmi/runHMI.sh"
+assert_contains "$CASE_ROOT/bootclasspath.result" 'mst2-carplay-scale.jar' "real P0468-shaped trial loads scale JAR"
+run_script uninstall.sh >/dev/null || not_ok "real P0468-shaped uninstall exits successfully"
+assert_count "$CASE_ROOT/tsd/hmi/runHMI.sh" 'NavActiveIgnore\.jar' 2 "uninstall still preserves duplicate NavActiveIgnore lines"
+assert_count "$CASE_ROOT/tsd/hmi/runHMI.sh" 'mst2-carplay-vc\.jar' 1 "uninstall still preserves real xPaiiN line"
+
 for invalid in runHMI-empty.sh runHMI-no-bootclasspath.sh runHMI-no-main.sh; do
     new_case "invalid-$invalid" "$FIXTURES/$invalid"
     cp "$CASE_ROOT/tsd/hmi/runHMI.sh" "$TMP_BASE/$invalid.before"

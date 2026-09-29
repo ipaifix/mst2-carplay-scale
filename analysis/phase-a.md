@@ -42,15 +42,25 @@ OpenJ9 supporte `-Xbootclasspath/p:`. Un second JAR est techniquement supportabl
 
 La condition de sécurité est l’absence de classe commune. Avec l’inventaire actuel de xPaiiN, le hook envisagé ne crée pas d’intersection. Si une future version de xPaiiN ajoute la même classe, l’installation devra être bloquée ou les patches fusionnés explicitement.
 
-## 4. Plus petit point d’interception
+## 4. Plus petit point d’interception confirmé sur P0468
 
-Ordre de préférence provisoire :
+Le dump véhicule a permis d'extraire puis de convertir les deux JXE exacts :
 
-1. constructeur exact de `ServiceConfiguration` P0468T ;
-2. petit adaptateur/sérialiseur exact P0468T, seulement si son implémentation est confirmée stable ;
-3. `ASLHandler.sendStartService()` en dernier recours.
+- `MIBHMI.jxe` : SHA-256 `302c681717bbfa70432fe4254710fa58e64dfe913e84dd5076bdca4a39b80679` ;
+- `tsd.mibstd2.hmi.v2.jxe` : SHA-256 `d18a116ba84451cfa84c15b667ed368237c0e3823aa98282911217aee7460ebb`.
 
-Le constructeur `ServiceConfiguration` observé reçoit directement `xResolution`, `yResolution`, `physicalDisplayHeight` et `physicalDisplayWidth`. Un shadow fidèle peut donc journaliser puis ajuster uniquement les deux derniers champs sans recopier toute la logique audio, tactile, HMI et d’état d’`ASLHandler`.
+Le hook retenu est `org.dsi.ifc.carplay.ServiceConfiguration`, confirmé directement dans le P0468. Cette classe est un DTO de 16 champs publics, 3 constructeurs, 16 accesseurs et `toString()`. Son constructeur complet reçoit directement `xResolution`, `yResolution`, `physicalDisplayHeight` et `physicalDisplayWidth`.
+
+Le chemin P0468 exact est :
+
+1. `ASLHandler.sendStartService()` lit les dimensions logiques du layout ;
+2. il calcule les dimensions physiques à partir de l'API Smartphone Integration ;
+3. il construit `ServiceConfiguration` avec le constructeur complet ;
+4. il appelle `DSICarplay.startService(config)` ;
+5. `tsd.mibstd2.hmi.dsi.carplay.DSICarplayImpl` sérialise l'objet ;
+6. `SerializerGen.serialize(..., ServiceConfiguration)` lit directement les 16 champs publics dans leur ordre stock.
+
+Un shadow fidèle de ce DTO peut donc journaliser puis, dans une phase ultérieure, ajuster uniquement les deux dimensions physiques. Il évite de recopier toute la logique audio, tactile, HMI et d'état d'`ASLHandler`.
 
 ## 5. Risques d’un remplacement d’`ASLHandler`
 
@@ -96,6 +106,17 @@ Une présence de `carplayscale-disable` sous `/media/mp00*` force un boot sans l
 - bloc invalide et résultat syntaxiquement invalide ;
 - sauvegarde exacte et absence de remplacement en cas d’échec.
 
-## 9. Informations P0468T manquantes
+## 9. Éléments P0468 confirmés par le dump véhicule
 
-Le train est connu et supporté par la Toolbox, mais cela ne garantit pas l’ABI Java. Les classes exactes, le proxy DSI réellement instancié, la JVM et le `runHMI.sh` vivant restent à obtenir. Ces éléments bloquent le JAR neutre, pas l’infrastructure shell host-side.
+- `runHMI.sh` : HMI `STD2Nav_EU`, version `H29.319.29.3`, JVM J9 Foundation 1.1 ;
+- ordre réel : JXE de base, `MIBHMI.jxe`, `NavActiveIgnore.jar` deux fois, puis `mst2-carplay-vc.jar` ;
+- variante xPaiiN active : `full` ;
+- classe d'appel exacte : `de.vw.mib.asl.internal.carplay.target.ASLHandler` ;
+- DTO exact : `org.dsi.ifc.carplay.ServiceConfiguration` ;
+- proxy concret exact : `tsd.mibstd2.hmi.dsi.carplay.DSICarplayImpl` ;
+- sérialisation exacte des 16 champs confirmée dans `SerializerGen` ;
+- bytecode stock : classfile version 46 ; xPaiiN utilise une version 48 compatible J2SE 1.4.
+
+La double ligne `NavActiveIgnore.jar` existait avant notre patch. Elle est préservée telle quelle : ce projet ne la corrige pas automatiquement.
+
+Les informations nécessaires à la construction du JAR neutre sont désormais disponibles. La validation sur véhicule reste volontairement séparée et devra commencer par un Trial Boot unique.

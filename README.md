@@ -2,7 +2,7 @@
 
 Patch expérimental, indépendant et réversible pour étudier les paramètres d’affichage annoncés par un MIB2 Standard TechniSat/Preh à Apple CarPlay.
 
-> **État actuel : étapes A et B en cours.** L’analyse technique et l’infrastructure de démarrage sécurisé sont présentes. Aucun JAR Java installable n’est encore fourni : il faut d’abord extraire et comparer les classes exactes du firmware `MST2_EU_VW_ZR_P0468T`.
+> **État actuel : étapes A et B terminées, étape C construite et validée hors véhicule.** Le dump P0468T a permis de confirmer le hook Java exact et de produire un JAR neutre. Il ne modifie encore aucune dimension et n’a pas encore été validé dans la voiture.
 
 ## Principes de sécurité
 
@@ -21,7 +21,8 @@ analysis/                    analyse de l’étape A
 method2-console/             infrastructure console de l’étape B
 tests/                       fixtures et tests host-side
 method1-GEM/                 réservé à l’intégration Toolbox (étape F)
-src/                         réservé au JAR neutre puis au hook Java
+src/                         shadow P0468 neutre et sonde de chargement
+scripts/                     construction reproductible du JAR Java
 build/                       sorties de build, non versionnées
 ```
 
@@ -29,7 +30,7 @@ build/                       sorties de build, non versionnées
 
 - [x] A — analyse des dépôts et inventaire des classes xPaiiN
 - [x] B — scripts Trial/Permanent/Disable/Emergency/Uninstall et tests shell
-- [ ] C — JAR neutre basé sur les classes exactes P0468T
+- [x] C — JAR neutre P0468T validé hors véhicule, essai voiture restant
 - [ ] D — journalisation de `ServiceConfiguration`
 - [ ] E — échelle physique 100/110/115/120/125 %
 - [ ] F — interface Green Engineering Menu
@@ -41,6 +42,17 @@ sh tests/run-shell-tests.sh
 ```
 
 Ces tests n’utilisent pas le véhicule. Ils simulent `/tsd`, les deux emplacements SD, plusieurs variantes de `runHMI.sh`, le Trial Boot et les échecs de validation.
+
+Le test Java nécessite le JDK 8 et les deux JAR d'analyse produits localement depuis le dump P0468 :
+
+```sh
+JAVA_HOME=/chemin/vers/jdk8 \
+MIBHMI_JAR=/chemin/vers/MIBHMI-P0468.jar \
+MIBSTD2_BASE_JAR=/chemin/vers/tsd-mibstd2-hmi-v2-P0468.jar \
+sh tests/run-java-tests.sh
+```
+
+Il vérifie l'identité de l'API publique avec la classe stock, les trois constructeurs, les dimensions inchangées, la version de bytecode J2SE 1.4 et le contenu minimal du JAR.
 
 # Recovery / Bootloop
 
@@ -78,4 +90,4 @@ Elle représente le `runHMI.sh` vivant au moment de la première installation et
 
 ## Important
 
-Ne rien copier sur le véhicule depuis ce dépôt tant que l’étape C n’a pas produit un JAR neutre validé pour P0468T. Voir [technical-readme.md](technical-readme.md) et [analysis/phase-a.md](analysis/phase-a.md).
+Le JAR actuel est uniquement la phase C neutre. Le premier essai véhicule devra obligatoirement utiliser `install.sh`, qui arme un seul Trial Boot. Ne pas activer le mode permanent avant confirmation du redémarrage HMI, de CarPlay et de la ligne `phase=C neutral` dans le log. Voir [technical-readme.md](technical-readme.md) et [analysis/phase-a.md](analysis/phase-a.md).
