@@ -1,122 +1,130 @@
 # MST2 CarPlay Display Scale
 
-Patch expérimental, indépendant et réversible pour ajuster les paramètres d'affichage annoncés par un MIB2 Standard TechniSat/Preh à Apple CarPlay.
+**English** | [Français](README.fr.md)
 
-> **État actuel : validé sur véhicule avec MST2_EU_VW_ZR_P0468T.** Les modes 100/110/115/120/125 %, le tactile et le Trial Boot ont été testés. Le chargement permanent est implémenté et testé hors véhicule, mais sa validation embarquée reste à faire. Les autres trains logiciels ne sont pas encore pris en charge.
+An experimental, standalone, and reversible patch that adjusts the display parameters reported by a TechniSat/Preh MIB2 Standard unit to Apple CarPlay.
 
-## Compatibilité
+> **Current status: validated in a vehicle running MST2_EU_VW_ZR_P0468T.** The 100/110/115/120/125% modes, touch input, and one-shot Trial Boot have been tested. Permanent loading is implemented and host-tested, but has not yet been validated in the vehicle. Other firmware trains are not currently supported.
 
-- unité : MIB2 Standard TechniSat/Preh (MST2) ;
-- firmware validé : `MST2_EU_VW_ZR_P0468T` ;
-- résolution observée : 800 × 480 ;
-- dimensions physiques stock observées : 174 × 104 mm ;
-- installation sans console : MIB STD2 Toolbox et Green Engineering Menu.
+## Compatibility
 
-**Ne pas installer le JAR sur une autre version de firmware.** La classe Java shadowée doit correspondre exactement à l'ABI du firmware. Une incompatibilité peut empêcher le démarrage du HMI.
+- unit: TechniSat/Preh MIB2 Standard (MST2);
+- validated firmware: `MST2_EU_VW_ZR_P0468T`;
+- observed logical resolution: 800 × 480;
+- observed stock physical dimensions: 174 × 104 mm;
+- console-free installation: MIB STD2 Toolbox and Green Engineering Menu.
 
-## Principes de sécurité
+**Do not install the P0468 JAR on another firmware version.** The shadowed Java class must exactly match the firmware ABI. An incompatible class may prevent the HMI from starting.
 
-- aucune modification de `MIBHMI.jxe`, du skin ou du framebuffer ;
-- le patch xPaiiN `mst2-carplay-vc` reste indépendant et intact ;
-- l’installation active seulement un **Trial Boot** à usage unique ;
-- le chargement permanent nécessite une action séparée ;
-- une carte SD portant `carplayscale-disable` neutralise le chargement avant Java ;
-- la désinstallation retire uniquement le bloc et le JAR `mst2-carplay-scale` ;
-- toute modification de `runHMI.sh` est préparée, validée puis remplacée atomiquement.
+## Safety design
 
-## Arborescence
+- does not modify `MIBHMI.jxe`, the skin, or the framebuffer;
+- keeps xPaiiN's `mst2-carplay-vc` patch independent and untouched;
+- installation enables only a one-shot **Trial Boot**;
+- permanent loading requires a separate explicit action;
+- an SD card containing `carplayscale-disable` prevents loading before Java starts;
+- uninstallation removes only the managed `mst2-carplay-scale` block and JAR;
+- every `runHMI.sh` change is prepared, validated, and replaced atomically.
+
+## Repository layout
 
 ```text
-analysis/                    analyse de l’étape A
-method2-console/             infrastructure console de l’étape B
-tests/                       fixtures et tests host-side
-method1-GEM/                 paquet et menu MIB STD2 Toolbox
-src/                         shadow P0468, logging et échelle physique
-scripts/                     construction reproductible du JAR Java
-build/                       sorties de build, non versionnées
+analysis/                    phase A safety analysis
+method2-console/             console installation infrastructure
+tests/                       fixtures and host-side tests
+method1-GEM/                 MIB STD2 Toolbox package and menu
+src/                         P0468 shadow, logging, and physical scaling
+scripts/                     reproducible Java JAR build
+build/                       untracked build outputs
 ```
 
-## État des phases
+## Validation status
 
-- [x] A — analyse des dépôts et inventaire des classes xPaiiN
-- [x] B — scripts Trial/Permanent/Disable/Emergency/Uninstall et tests shell
-- [x] C — comportement neutre à 100 % validé sur véhicule
-- [x] D — journalisation de `ServiceConfiguration` validée sur véhicule
-- [x] E — échelle physique 100/110/115/120/125 % et tactile validés sur véhicule
-- [x] F — interface Green Engineering Menu validée sur véhicule ; mode permanent testé hors véhicule
+- [x] A — upstream analysis and xPaiiN class inventory
+- [x] B — Trial/Permanent/Disable/Emergency/Uninstall scripts and shell tests
+- [x] C — neutral 100% behavior validated in the vehicle
+- [x] D — `ServiceConfiguration` logging validated in the vehicle
+- [x] E — 100/110/115/120/125% physical scaling and touch input validated in the vehicle
+- [x] F — Green Engineering Menu validated in the vehicle; permanent mode host-tested
 
-## Installation rapide avec la Toolbox
+## Quick Toolbox installation
 
-Le dépôt ne contient aucun firmware Volkswagen ni JAR extrait du véhicule. Construire d'abord le JAR avec les dépendances P0468 obtenues depuis sa propre unité, puis préparer le paquet :
+This repository contains no Volkswagen firmware and no JAR extracted from a vehicle. First build the patch JAR with P0468 dependencies obtained from your own unit:
 
 ```sh
-JAVA_HOME=/chemin/vers/jdk8 \
-MIBHMI_JAR=/chemin/vers/MIBHMI-P0468.jar \
-MIBSTD2_BASE_JAR=/chemin/vers/tsd-mibstd2-hmi-v2-P0468.jar \
+JAVA_HOME=/path/to/jdk8 \
+MIBHMI_JAR=/path/to/MIBHMI-P0468.jar \
+MIBSTD2_BASE_JAR=/path/to/tsd-mibstd2-hmi-v2-P0468.jar \
 sh scripts/build-neutral-jar.sh
 ```
 
-Le paquet prêt à copier est produit dans `method1-GEM/custom`, avec une archive dans `build/mst2-carplay-scale-toolbox-p0468.zip`. Suivre ensuite [la procédure Toolbox](method1-GEM/README.md), en commençant obligatoirement par un essai ponctuel à 100 %.
+The SD-card payload is generated in `method1-GEM/custom`, and an archive is written to `build/mst2-carplay-scale-toolbox-p0468.zip`. Then follow the [Toolbox procedure](method1-GEM/README.md), always starting with a one-shot trial at 100%.
 
-## Tests locaux
+## Local tests
 
 ```sh
 sh tests/run-shell-tests.sh
 ```
 
-Ces tests n’utilisent pas le véhicule. Ils simulent `/tsd`, les deux emplacements SD, plusieurs variantes de `runHMI.sh`, le Trial Boot et les échecs de validation.
+These tests do not use the vehicle. They simulate `/tsd`, both SD-card mount points, several `runHMI.sh` variants, Trial Boot behavior, and validation failures.
 
-Le test Java nécessite le JDK 8 et les deux JAR d'analyse produits localement depuis le dump P0468 :
+The Java test requires JDK 8 and the two analysis JARs produced locally from the P0468 dump:
 
 ```sh
-JAVA_HOME=/chemin/vers/jdk8 \
-MIBHMI_JAR=/chemin/vers/MIBHMI-P0468.jar \
-MIBSTD2_BASE_JAR=/chemin/vers/tsd-mibstd2-hmi-v2-P0468.jar \
+JAVA_HOME=/path/to/jdk8 \
+MIBHMI_JAR=/path/to/MIBHMI-P0468.jar \
+MIBSTD2_BASE_JAR=/path/to/tsd-mibstd2-hmi-v2-P0468.jar \
 sh tests/run-java-tests.sh
 ```
 
-Il vérifie l'identité de l'API publique avec la classe stock, les trois constructeurs, les dimensions inchangées, la version de bytecode J2SE 1.4 et le contenu minimal du JAR.
+It verifies that the public API matches the stock class, all three constructors are preserved, stock dimensions remain unchanged, the bytecode targets J2SE 1.4, and the JAR contains only the expected classes.
 
-# Recovery / Bootloop
+## Recovery / boot loops
 
-## Niveau 1 — Trial Boot
+### Level 1 — Trial Boot
 
-Le marqueur `/tsd/var/carplayscale/trial` est supprimé **avant** l’ajout du JAR au bootclasspath. Après un essai, le reboot suivant ne charge donc plus le patch.
+The `/tsd/var/carplayscale/trial` marker is removed **before** the JAR is added to the boot class path. After a trial, the following reboot no longer loads the patch.
 
-## Niveau 2 — carte SD
+### Level 2 — emergency SD card
 
-Créer un fichier vide nommé :
+Create an empty file named:
 
 ```text
 carplayscale-disable
 ```
 
-à la racine d’une carte SD, l’insérer puis redémarrer. Le bloc shell inspecte `/media/mp00*` avant Java et n’ajoute pas le JAR, même si le mode permanent est actif.
+Place it at the root of an SD card, insert the card, and reboot. The shell block checks `/media/mp00*` before Java starts and skips the JAR even when permanent mode is enabled.
 
-## Niveau 3 — Telnet
+### Level 3 — Telnet
 
 ```sh
 rm -f /tsd/var/carplayscale/enabled /tsd/var/carplayscale/trial
 ```
 
-Cette commande ne touche ni à `mst2-carplay-vc.jar`, ni à ses fichiers d’état.
+This does not modify `mst2-carplay-vc.jar` or any of its state files.
 
-## Niveau 4 — réparation manuelle
+### Level 4 — manual repair
 
-La sauvegarde dédiée est :
+The dedicated backup is:
 
 ```text
 /tsd/hmi/runHMI.sh.carplayscale.bak
 ```
 
-Elle représente le `runHMI.sh` vivant au moment de la première installation et conserve donc les autres patches déjà présents. Une désinstallation normale préfère toujours la suppression chirurgicale du bloc `mst2-carplay-scale` dans le fichier vivant.
+It captures the live `runHMI.sh` at the time of the first installation and therefore preserves previously installed patches. Normal uninstallation always prefers removing only the managed `mst2-carplay-scale` block from the current file.
 
 ## Important
 
-Chaque nouvelle unité doit commencer à 100 % avec uniquement le Trial Boot. Ne pas activer le mode permanent ni une échelle supérieure avant confirmation du redémarrage HMI, de CarPlay et des valeurs stock dans le log. Pour une installation sans console, voir [method1-GEM/README.md](method1-GEM/README.md).
+Every new unit must start at 100% using Trial Boot only. Do not enable permanent loading or select a higher scale until the HMI reboot, CarPlay, touch input, and stock log values have all been confirmed. For console-free installation, see [method1-GEM/README.md](method1-GEM/README.md).
 
-Ce projet n'est affilié ni à Volkswagen, ni à Apple. Toute modification d'une unité embarquée est effectuée aux risques de l'utilisateur.
+This project is not affiliated with Volkswagen or Apple. Modifying an embedded head unit is entirely at the user's own risk.
 
-## Licence
+## References and acknowledgements
 
-Le code propre au projet est distribué sous licence MIT. Voir [LICENSE](LICENSE).
+- [xPaiiN/mst2-carplay-vc](https://github.com/xPaiiN/mst2-carplay-vc) — the project that inspired the independent Toolbox integration and provided the coexistence target used throughout development. `mst2-carplay-scale` does not modify or bundle the xPaiiN patch.
+- [olli991/mib-std2-pq-zr-toolbox](https://github.com/olli991/mib-std2-pq-zr-toolbox) — MIB STD2 Toolbox and Green Engineering Menu integration model.
+- [Eclipse OpenJ9 boot class path documentation](https://eclipse.dev/openj9/docs/xbootclasspath/) — reference for the Java class-prepending mechanism.
+
+## License
+
+Project-owned code is released under the MIT License. See [LICENSE](LICENSE).
