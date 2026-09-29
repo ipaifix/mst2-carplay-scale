@@ -1,0 +1,5 @@
+build/*
+!build/.gitkeep
+*.jar
+*.class
+.DS_Store
