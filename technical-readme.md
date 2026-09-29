@@ -81,6 +81,8 @@ L'installateur remet systématiquement la configuration à `scale=100`. Une vale
 
 Le dump a confirmé le `runHMI.sh` vivant, le bootstrap J9, la version HMI `H29.319.29.3`, les classes P0468 exactes et la variante xPaiiN `full`. Le fichier vivant comporte deux lignes identiques pour `NavActiveIgnore.jar`; elles sont préservées sans correction automatique.
 
+La validation sur véhicule a ensuite confirmé les valeurs stock suivantes : résolution logique et tactile 800 × 480, offsets nuls et dimensions physiques 174 × 104 mm. Les Trial Boots à 100, 110, 115, 120 et 125 % ont fonctionné sans perte du tactile ni recadrage incorrect. À 125 %, le patch annonce 218 × 130 mm. Le chargement permanent reste à valider sur véhicule.
+
 Les fichiers bruts (`dump/`, photo et log VCDS) sont exclus de Git, car ils sont volumineux et peuvent contenir des identifiants du véhicule.
 
 ## Références
