@@ -1,0 +1,25 @@
+# mst2-carplay-scale: begin
+: "${CPS_ROOT:=}"
+CPS_BOOT_STATE="${CPS_ROOT}/tsd/var/carplayscale"
+CPS_BOOT_JAR="${CPS_ROOT}/tsd/hmi/HMI/jar/mst2-carplay-scale.jar"
+CPS_BOOT_EMERGENCY=0
+CPS_BOOT_LOAD=0
+for CPS_BOOT_MEDIA in "${CPS_ROOT}"/media/mp00*; do
+    if [ -f "$CPS_BOOT_MEDIA/carplayscale-disable" ]; then
+        CPS_BOOT_EMERGENCY=1
+    fi
+done
+if [ "$CPS_BOOT_EMERGENCY" -eq 0 ] && [ -s "$CPS_BOOT_JAR" ]; then
+    if [ -f "$CPS_BOOT_STATE/trial" ]; then
+        if rm -f "$CPS_BOOT_STATE/trial"; then
+            CPS_BOOT_LOAD=1
+        fi
+    elif [ -f "$CPS_BOOT_STATE/enabled" ]; then
+        CPS_BOOT_LOAD=1
+    fi
+fi
+if [ "$CPS_BOOT_LOAD" -eq 1 ]; then
+    BOOTCLASSPATH="$BOOTCLASSPATH -Xbootclasspath/p:$MIBJAR/mst2-carplay-scale.jar"
+fi
+unset CPS_BOOT_STATE CPS_BOOT_JAR CPS_BOOT_EMERGENCY CPS_BOOT_LOAD CPS_BOOT_MEDIA
+# mst2-carplay-scale: end
