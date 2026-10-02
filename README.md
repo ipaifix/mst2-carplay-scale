@@ -6,6 +6,29 @@ An experimental, standalone, and reversible patch that adjusts the display param
 
 > **Current status: validated in a vehicle running MST2_EU_VW_ZR_P0468T.** The 100/110/115/120/125% modes, touch input, and one-shot Trial Boot have been tested. Permanent loading is implemented and host-tested, but has not yet been validated in the vehicle. Other firmware trains are not currently supported.
 
+## Visual comparison: 100% vs 115%
+
+At 115%, the unit reports larger physical display dimensions to CarPlay. CarPlay consequently uses a denser layout—five icons per row instead of four—while the 800 × 480 logical resolution and touch mapping remain unchanged.
+
+<table>
+  <tr>
+    <th>100% — stock layout</th>
+    <th>115% — denser layout</th>
+  </tr>
+  <tr>
+    <td><img src="docs/images/carplay-home-100-screenshot.png" alt="CarPlay home screen at the stock 100 percent scale"></td>
+    <td><img src="docs/images/carplay-home-115-screenshot.png" alt="CarPlay home screen at the 115 percent scale"></td>
+  </tr>
+  <tr>
+    <th>100% in the vehicle</th>
+    <th>115% in the vehicle</th>
+  </tr>
+  <tr>
+    <td><img src="docs/images/carplay-home-100-display.jpg" alt="MST2 display showing CarPlay at the stock 100 percent scale"></td>
+    <td><img src="docs/images/carplay-home-115-display.jpg" alt="MST2 display showing CarPlay at the 115 percent scale"></td>
+  </tr>
+</table>
+
 ## Compatibility
 
 - unit: TechniSat/Preh MIB2 Standard (MST2);

@@ -6,6 +6,29 @@ Patch expérimental, indépendant et réversible pour ajuster les paramètres d'
 
 > **État actuel : validé sur véhicule avec MST2_EU_VW_ZR_P0468T.** Les modes 100/110/115/120/125 %, le tactile et le Trial Boot ont été testés. Le chargement permanent est implémenté et testé hors véhicule, mais sa validation embarquée reste à faire. Les autres trains logiciels ne sont pas encore pris en charge.
 
+## Comparaison visuelle : 100 % vs 115 %
+
+À 115 %, l'unité annonce à CarPlay des dimensions physiques plus grandes. CarPlay adopte alors une interface plus dense — cinq icônes par ligne au lieu de quatre — tandis que la résolution logique 800 × 480 et la correspondance tactile restent inchangées.
+
+<table>
+  <tr>
+    <th>100 % — disposition d'origine</th>
+    <th>115 % — disposition plus dense</th>
+  </tr>
+  <tr>
+    <td><img src="docs/images/carplay-home-100-screenshot.png" alt="Accueil CarPlay avec l'échelle d'origine à 100 %"></td>
+    <td><img src="docs/images/carplay-home-115-screenshot.png" alt="Accueil CarPlay avec l'échelle à 115 %"></td>
+  </tr>
+  <tr>
+    <th>100 % dans le véhicule</th>
+    <th>115 % dans le véhicule</th>
+  </tr>
+  <tr>
+    <td><img src="docs/images/carplay-home-100-display.jpg" alt="Écran MST2 affichant CarPlay avec l'échelle d'origine à 100 %"></td>
+    <td><img src="docs/images/carplay-home-115-display.jpg" alt="Écran MST2 affichant CarPlay avec l'échelle à 115 %"></td>
+  </tr>
+</table>
+
 ## Compatibilité
 
 - unité : MIB2 Standard TechniSat/Preh (MST2) ;
